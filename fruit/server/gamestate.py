@@ -4,7 +4,7 @@ from time import time
 from direct.showbase.ShowBase import ShowBase
 from panda3d.bullet import BulletCapsuleShape, BulletCharacterControllerNode, BulletPlaneShape, BulletRigidBodyNode, \
     BulletWorld, ZUp
-from panda3d.core import BitMask32, Vec3
+from panda3d.core import Vec3
 from pandac.PandaModules import loadPrcFile
 
 from fruit.rpc import game_pb2, general_pb2
@@ -29,9 +29,14 @@ class Thing(object):
         self.game_state = game_state
         self.update_due_time = 0
         self.schedule_for_update()
+        self.active = True
         self.__velocity = general_pb2.Vector()
         self.__velocity.x = self.__velocity.y = self.__velocity.z = 0
         self.__angular_velocity = 0
+
+    def destroy(self):
+        del self.__thing_list[self.name]
+        self.active = False
 
     def get_unique_name(self, name):
         """All Things have a unique name.  This is made up of a
@@ -126,7 +131,12 @@ class LivingThing(Thing):
 
         self.node = BulletCharacterControllerNode(shape, 0.4, self.get_unique_name(name))
         self.node_path = self.game_state.render.attachNewNode(self.node)
-        self.game_state.world.attachCharacter(self.node_path.node())
+        self.game_state.world.attachCharacter(self.node)
+
+    def destroy(self):
+        self.node_path.removeNode()
+        self.game_state.world.removeCharacter(self.node)
+        super(LivingThing, self).destroy()
 
 class Player(LivingThing):
     __players = set()
@@ -141,6 +151,10 @@ class Player(LivingThing):
         # The player will fall onto the ground plane when the game starts.  This is a feature, not a bug. :)
 
         self.move(0, -20, 5)
+
+    def destroy(self):
+        self.__players.remove(self)
+        super(Player, self).destroy()
 
     def update_known_things(self):
         """Make sure that the client representing this player is aware
@@ -193,7 +207,7 @@ class Player(LivingThing):
         to_update = set()
         while Thing.pending_updates and Thing.pending_updates[0][0] < update_time:
             _, thing = heapq.heappop(Thing.pending_updates)
-            if thing.update_due_time < update_time:
+            if thing.update_due_time < update_time and thing.active:
                 to_update.add(thing)
                 thing.reschedule_update()
 

@@ -10,6 +10,24 @@ from pandac.PandaModules import loadPrcFile
 
 loadPrcFile("client-config.prc")
 
+class Thing(object):
+    __things = {}
+
+    @classmethod
+    def add(self, tag, node, node_path):
+        thing = Thing()
+        Thing.__things[tag] = thing
+        thing.tag = tag
+        thing.node = node
+        thing.node_path = node_path
+
+    def remove(self):
+        del Thing.__things[self.tag]
+
+    @classmethod
+    def get_thing(self, tag):
+        return self.__things[tag]
+
 class FriendlyFruit(ShowBase):
     def __init__(self, player_tag):
         ShowBase.__init__(self)
@@ -89,7 +107,8 @@ class FriendlyFruit(ShowBase):
         # they should take a short time to accelerate.)
         node = BulletCharacterControllerNode(shape, 0.4, tag)
         node_path = self.render.attachNewNode(node)
-        self.world.attachCharacter(node_path.node())
+        Thing.add(tag, node, node_path)
+        self.world.attachCharacter(node)
 
         # Does this object represent the player who is using this client?
         if tag == self.__player_tag:
@@ -112,15 +131,21 @@ class FriendlyFruit(ShowBase):
             # bounding volume.
             humanoid.setZ(-height / 2)
 
+    def server_removed_object(self, tag):
+        thing = Thing.get_thing(tag)
+        self.world.removeCharacter(thing.node)
+        thing.node_path.removeNode()
+        thing.remove()
+
     def server_moves_thing(self, tag, loc_x, loc_y, loc_z, speed_x, speed_y, speed_z, angle, angular_velocity):
-        node_path = self.render.find("**/" + tag)
-        node_path.setPos(loc_x, loc_y, loc_z)
-        node_path.node().setLinearMovement(Vec3(speed_x, speed_y, speed_z), True)
+        thing = Thing.get_thing(tag)
+        thing.node_path.setPos(loc_x, loc_y, loc_z)
+        thing.node.setLinearMovement(Vec3(speed_x, speed_y, speed_z), True)
 
         # I don't know why deg2Rad is required in the following line; I suspect it is a Panda bug.
-        node_path.setH(deg2Rad(angle))
+        thing.node_path.setH(deg2Rad(angle))
 
         if angular_velocity != 0:
-            self.__rotations[node_path.node()] = angular_velocity
-        elif node_path.node() in self.__rotations:
-            del self.__rotations[node_path.node()]
+            self.__rotations[thing.node] = angular_velocity
+        elif thing.node in self.__rotations:
+            del self.__rotations[thing.node]

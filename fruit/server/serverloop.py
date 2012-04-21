@@ -14,10 +14,15 @@ class FruitRequestHandler(messaging.Rpc):
         messaging.Rpc.__init__(self, server, conn, addr)
         self.__next_event_tag = 0
         self.__events = {}
+        self.__player = None
 
     @classmethod
     def set_game_state(self, game_state):
         self.game_state = game_state
+
+    def handle_close(self):
+        self.close()
+        if self.__player is not None: self.__player.destroy()
 
     def message_received(self, name, msg):
         if name == "account_pb2.NewAccount":

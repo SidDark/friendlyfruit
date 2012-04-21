@@ -21,6 +21,10 @@ class ServerConnection(messaging.Rpc):
         messaging.Rpc.__init__(self, sock=sock)
         self.app = None
 
+    def handle_close(self):
+        print "Connection to server was lost."
+        sys.exit(3)
+
     def uncaught_exception(self, e):
         sys.exit(1)
 
@@ -43,6 +47,10 @@ class ServerConnection(messaging.Rpc):
             data = game_pb2.AddObject()
             data.ParseFromString(msg)
             self.app.server_created_object(data.tag, data.height, data.radius)
+        elif name == "game_pb2.RemoveObject":
+            data = game_pb2.RemoveObject()
+            data.ParseFromString(msg)
+            self.app.server_removed_object(data.tag)
         elif name == "game_pb2.ThingState":
             data = game_pb2.ThingState()
             data.ParseFromString(msg)
