@@ -7,7 +7,7 @@ from panda3d.bullet import BulletCapsuleShape, BulletCharacterControllerNode, Bu
 from panda3d.core import Vec3
 from pandac.PandaModules import loadPrcFile
 
-from fruit.rpc import game_pb2, general_pb2
+from ..rpc import game_pb2, general_pb2
 
 # How often do we update the location of objects which haven't been moved explicitly?
 STATIONARY_OBJECT_UPDATE_TIME = 5

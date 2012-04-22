@@ -20,3 +20,6 @@ message Login {
   required string user_id = 1;
   required string password = 2;
 }
+
+message KeepAlive {
+}

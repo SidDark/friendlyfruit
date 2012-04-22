@@ -1,5 +1,15 @@
 import asynchat, struct, traceback
-from fruit.rpc import general_pb2
+
+from .rpc import general_pb2
+
+# How often we send a keepalive message, in seconds.
+KEEPALIVE_FREQUENCY=5
+
+# How long we will wait for a keepalive message, before closing the connection.
+KEEPALIVE_PERMITTED_DELAY=16
+
+# (We should be aggressive about closing lost connections.  Otherwise a character may hang around the world
+# behaving strangely, just because of connectivity problems.)
 
 class Rpc(asynchat.async_chat):
 

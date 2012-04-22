@@ -1,4 +1,4 @@
-import argparse, asyncore, socket, sys
+import argparse, asyncore, socket, sys, time
 
 from . import gameloop
 from .. import messaging
@@ -19,11 +19,21 @@ class ServerConnection(messaging.Rpc):
 
     def __init__(self, sock):
         messaging.Rpc.__init__(self, sock=sock)
+        self.__last_keepalive = time.time()
         self.app = None
 
     def handle_close(self):
         print "Connection to server was lost."
         sys.exit(3)
+
+    def keepalive(self, task):
+        data = account_pb2.KeepAlive()
+        self.send_rpc(data)
+
+        if self.__last_keepalive < time.time() - messaging.KEEPALIVE_PERMITTED_DELAY:
+            self.handle_close()
+
+        return task.again
 
     def uncaught_exception(self, e):
         sys.exit(1)
@@ -39,6 +49,8 @@ class ServerConnection(messaging.Rpc):
             data = account_pb2.Error()
             data.ParseFromString(msg)
             print data.message
+        elif name == "account_pb2.KeepAlive":
+            self.__last_keepalive = time.time()
         elif name == "game_pb2.Start":
             data = game_pb2.Start()
             data.ParseFromString(msg)
@@ -70,7 +82,8 @@ class ServerConnection(messaging.Rpc):
         self.send_rpc(data)
 
     def __start_game(self, player_tag):
-        self.app = gameloop.FriendlyFruit(player_tag)
+        self.app = gameloop.FriendlyFruit(self, player_tag)
+        self.app.doMethodLater(messaging.KEEPALIVE_FREQUENCY, self.keepalive, "KeepAliveTask")
 
 def parse_command_line():
     global args

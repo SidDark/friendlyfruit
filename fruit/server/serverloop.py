@@ -1,4 +1,4 @@
-import asyncore, re, socket
+import asyncore, re, socket, time
 import pymongo.errors
 
 from . import db
@@ -15,14 +15,31 @@ class FruitRequestHandler(messaging.Rpc):
         self.__next_event_tag = 0
         self.__events = {}
         self.__player = None
+        self.__active = True
+
+        self.__last_keepalive = time.time()
+        self.game_state.doMethodLater(messaging.KEEPALIVE_FREQUENCY, self.keepalive, "KeepAlive")
 
     @classmethod
     def set_game_state(self, game_state):
         self.game_state = game_state
 
     def handle_close(self):
-        self.close()
-        if self.__player is not None: self.__player.destroy()
+        if self.__active:
+            self.__active = False
+            self.close()
+            if self.__player is not None: self.__player.destroy()
+
+    def keepalive(self, task):
+        if self.__active and self.__last_keepalive < time.time() - messaging.KEEPALIVE_PERMITTED_DELAY:
+            self.handle_close()
+
+        if self.__active:
+            data = account_pb2.KeepAlive()
+            self.send_rpc(data)
+            return task.again
+
+        return task.done
 
     def message_received(self, name, msg):
         if name == "account_pb2.NewAccount":
@@ -33,6 +50,8 @@ class FruitRequestHandler(messaging.Rpc):
             data = account_pb2.Login()
             data.ParseFromString(msg)
             self.__login(data.user_id, data.password)
+        elif name == "account_pb2.KeepAlive":
+            self.__last_keepalive = time.time()
         elif name == "game_pb2.EventOccurred":
             data = game_pb2.EventOccurred()
             data.ParseFromString(msg)
@@ -74,20 +93,20 @@ class FruitRequestHandler(messaging.Rpc):
             strafe_speed = player_speed / 2
             turn_speed = 30
 
-            self.accept('w', self.__forward, [player_speed])
-            self.accept('w-up', self.__forward, [0])
-            self.accept('s', self.__forward, [-player_speed])
-            self.accept('s-up', self.__forward, [0])
+            self.accept("w", self.__forward, [player_speed])
+            self.accept("w-up", self.__forward, [0])
+            self.accept("s", self.__forward, [-player_speed])
+            self.accept("s-up", self.__forward, [0])
 
-            self.accept('a', self.__strafe, [-strafe_speed])
-            self.accept('a-up', self.__strafe, [0])
-            self.accept('d', self.__strafe, [strafe_speed])
-            self.accept('d-up', self.__strafe, [0])
+            self.accept("a", self.__strafe, [-strafe_speed])
+            self.accept("a-up", self.__strafe, [0])
+            self.accept("d", self.__strafe, [strafe_speed])
+            self.accept("d-up", self.__strafe, [0])
 
-            self.accept('arrow_left', self.__turn, [turn_speed])
-            self.accept('arrow_left-up', self.__turn, [0])
-            self.accept('arrow_right', self.__turn, [-turn_speed])
-            self.accept('arrow_right-up', self.__turn, [0])
+            self.accept("arrow_left", self.__turn, [turn_speed])
+            self.accept("arrow_left-up", self.__turn, [0])
+            self.accept("arrow_right", self.__turn, [-turn_speed])
+            self.accept("arrow_right-up", self.__turn, [0])
 
     def accept(self, event, handler, preset_args):
         """Subscribe to an event on the client.  This allows the

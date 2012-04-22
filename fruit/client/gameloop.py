@@ -29,8 +29,9 @@ class Thing(object):
         return self.__things[tag]
 
 class FriendlyFruit(ShowBase):
-    def __init__(self, player_tag):
+    def __init__(self, server_connection, player_tag):
         ShowBase.__init__(self)
+        self.__server_connection = server_connection
         self.__player_tag = player_tag
         self.__rotations = {}
 
@@ -47,7 +48,7 @@ class FriendlyFruit(ShowBase):
 
         # The ground first:
         shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
-        node = BulletRigidBodyNode('Ground')
+        node = BulletRigidBodyNode("Ground")
         node.addShape(shape)
         np = self.render.attachNewNode(node)
         np.setPos(0, 0, 0)
@@ -76,7 +77,7 @@ class FriendlyFruit(ShowBase):
         self.humanoidPace.loop()
 
         # Create a light so we can see the scene.
-        dlight = DirectionalLight('dlight')
+        dlight = DirectionalLight("dlight")
         dlight.setColor(VBase4(2, 2, 2, 0))
         dlnp = self.render.attachNewNode(dlight)
         dlnp.setHpr(0, -60, 0)
