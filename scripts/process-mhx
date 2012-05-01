@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import PythonMagick, errno, os, re, shutil, subprocess, sys
+
+from_file = sys.argv[1]
+to_name = sys.argv[2]
+
+def process_line(line):
+    if re.match(r"^ *Filename ", line):
+        before, filename, after = re.match(r"( *Filename +)([^ ;]+)( *;\s*$)", line).groups()
+        old_filename = re.sub(r"^/.*/(?=textures/)", "", filename)
+        new_filename = re.sub(r"^textures", to_name, old_filename)
+        if not os.path.exists(old_filename):
+            print "No copy or conversion as file not found: %s" % old_filename
+        elif re.search(r"\.tif$", old_filename):
+            new_filename = re.sub(r"\.tif$", ".png", new_filename)
+            print "Convert TIFF to PNG: %s -> %s" % (old_filename, new_filename)
+            PythonMagick.Image(old_filename).write(new_filename)
+        else:
+            print "Copy: %s -> %s" % (old_filename, new_filename)
+            shutil.copyfile(old_filename, new_filename)
+
+        return before + new_filename + after
+    else:
+        return line
+
+try:
+    os.mkdir(to_name)
+except OSError, e:
+    if e.errno == errno.EEXIST:
+        pass
+    else:
+        raise
+
+with open(from_file) as handle:
+    lines = [process_line(line) for line in handle]
+
+with open(to_name + ".mhx", "w") as handle:
+    for line in lines:
+        handle.write(line)
