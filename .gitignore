@@ -4,5 +4,11 @@
 
 .sconsign.dblite
 
+/README.html
 /fruit/rpc/*_pb2.py
 /server.cfg
+
+# If you want to check out the wiki, so you can work on it offline,
+# you can put it here:
+
+/friendlyfruit.wiki/
