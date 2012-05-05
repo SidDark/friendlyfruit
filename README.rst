@@ -81,6 +81,10 @@ the following additional dependencies:
   all the manually-written Python files.  It's probably sensible to
   run this before checking changes into git.
 
+* PythonMagick and ImageMagick (http://www.imagemagick.org/) are used
+  for converting MakeHuman's TIFF images to PNG.  You don't need this
+  unless you are going to be creating your own MakeHuman models.
+
 Building
 --------
 
@@ -114,6 +118,32 @@ to use the database 'main' and to prefix all collection names with
 give them prefixes like 'main.raspberry' and 'main.strawberry'.  If
 they got big enough that you wanted to use different databases, you
 could use 'raspberry.fruit' and 'strawberry.fruit'.
+
+MakeHuman Models
+----------------
+
+When you export your model from MakeHuman, you will have an mhx
+file, which will later be used for importing it into Blender.
+Suppose your model is called Boris; you might then call your file
+boris.mhx.  You will also have a directory which holds the textures.
+Unhelpfully this will always be called 'textures'.  If you are in
+the media directory, you can convert the model as follows:
+
+| mv boris.mhx boris_input.mhx
+| ../scripts/process-mhx boris_input.mhx boris
+
+You will now end up with a directory called boris, containing PNG
+versions of all the textures.  You will also have a new file called
+boris.mhx, which has been fixed up so it will look for the textures in
+the right place (the boris directory, rather than the textures
+directory).  You can now import this into Blender.
+
+If you create new MakeHuman models and want them added to the
+repository, please run scripts/process-mhx on them *before* checking
+them into your branch.  This will ensure that the repository only
+stores the PNG images, rather than storing the TIFF and PNG images
+separately.  Storing two copies of the images bloats the repository,
+and it is likely to get big enough as it is.
 
 Running FriendlyFruit
 ---------------------
@@ -238,34 +268,3 @@ This can be imported into Blender using the Wavefront importer.
 (There are other programs which convert COLLADA to Wavefront, but as
 usual, many of them give unsatisfactory results.  In particular, many
 of them fail to export the textures properly.)
-
-Blender to Panda
-----------------
-
-Follow the first option (YABEE) on this page:
-
-http://www.panda3d.org/manual/index.php/Converting_from_Blender
-
-Before exporting you must apply all modifiers except the armature.  Be
-very careful that you undo this after exporting, or (assuming the
-modifiers are required) you will lose your work.
-
-To create for example a walk cycle, first create it as a regular
-Blender animation.  You can have several in the same file, one after
-the other.  Then, during export, enter the start and end frames of
-each animation into YABEE's dialogue box.
-
-Underneath this dialogue box are various options.  Set them as
-follows::
-
-
-    [ ] Animation only
-    [ ] Separate animation files *
-	TBS generation: No
-	Tex. process:   Simple
-    [ ] UV as texture
-    [ ] Copy texture files
-
-
-\* This one is up to you, but I think it's convenient to store
-everything in one file.
