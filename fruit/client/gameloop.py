@@ -123,7 +123,7 @@ class FriendlyFruit(ShowBase):
             self.camera.reparentTo(node_path)
         else:
             # If no, create a new Actor to represent the player or NPC.
-            humanoid = Actor("player.egg")
+            humanoid = Actor("player.bam")
             humanoid.setH(180)
             humanoid.reparentTo(node_path)
 
