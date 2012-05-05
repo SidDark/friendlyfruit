@@ -268,34 +268,3 @@ This can be imported into Blender using the Wavefront importer.
 (There are other programs which convert COLLADA to Wavefront, but as
 usual, many of them give unsatisfactory results.  In particular, many
 of them fail to export the textures properly.)
-
-Blender to Panda
-----------------
-
-Follow the first option (YABEE) on this page:
-
-http://www.panda3d.org/manual/index.php/Converting_from_Blender
-
-Before exporting you must apply all modifiers except the armature.  Be
-very careful that you undo this after exporting, or (assuming the
-modifiers are required) you will lose your work.
-
-To create for example a walk cycle, first create it as a regular
-Blender animation.  You can have several in the same file, one after
-the other.  Then, during export, enter the start and end frames of
-each animation into YABEE's dialogue box.
-
-Underneath this dialogue box are various options.  Set them as
-follows::
-
-
-    [ ] Animation only
-    [ ] Separate animation files *
-	TBS generation: No
-	Tex. process:   Simple
-    [ ] UV as texture
-    [ ] Copy texture files
-
-
-\* This one is up to you, but I think it's convenient to store
-everything in one file.
