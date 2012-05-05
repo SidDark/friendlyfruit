@@ -5,7 +5,7 @@ from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence
 from panda3d.bullet import BulletCapsuleShape, BulletCharacterControllerNode, BulletPlaneShape, BulletRigidBodyNode, \
     BulletWorld, ZUp
-from panda3d.core import DirectionalLight, Point3, VBase4, Vec3, deg2Rad
+from panda3d.core import AmbientLight, DirectionalLight, Point3, VBase4, Vec3, deg2Rad
 from pandac.PandaModules import loadPrcFile
 
 loadPrcFile("client-config.prc")
@@ -60,15 +60,16 @@ class FriendlyFruit(ShowBase):
         cathedral.setScale(0.5)
 
         # Load the Blender model.
-        self.humanoid = Actor("player.egg")
+        self.humanoid = Actor("player.bam")
         self.humanoid.setScale(0.5)
         self.humanoid.reparentTo(self.render)
         self.humanoid.loop("Walk")
 
-        humanoidPosInterval1 = self.humanoid.posInterval(58, Point3(13, -10, 0), startPos=Point3(13, 10, 0))
-        humanoidPosInterval2 = self.humanoid.posInterval(58, Point3(13, 10, 0), startPos=Point3(13, -10, 0))
-        humanoidHprInterval1 = self.humanoid.hprInterval(3, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
-        humanoidHprInterval2 = self.humanoid.hprInterval(3, Point3(0, 0, 0), startHpr=Point3(180, 0, 0))
+        speed = 14.6 # units per second
+        humanoidPosInterval1 = self.humanoid.posInterval(80 / speed, Point3(13, -20, 0), startPos=Point3(13, 20, 0))
+        humanoidPosInterval2 = self.humanoid.posInterval(80 / speed, Point3(13, 20, 0), startPos=Point3(13, -20, 0))
+        humanoidHprInterval1 = self.humanoid.hprInterval(0.1, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
+        humanoidHprInterval2 = self.humanoid.hprInterval(0.1, Point3(0, 0, 0), startHpr=Point3(180, 0, 0))
 
         # Make the Blender model walk up and down.
         self.humanoidPace = Sequence(humanoidPosInterval1, humanoidHprInterval1, humanoidPosInterval2,
@@ -76,12 +77,17 @@ class FriendlyFruit(ShowBase):
 
         self.humanoidPace.loop()
 
-        # Create a light so we can see the scene.
+        # Create lights so we can see the scene.
         dlight = DirectionalLight("dlight")
         dlight.setColor(VBase4(2, 2, 2, 0))
         dlnp = self.render.attachNewNode(dlight)
         dlnp.setHpr(0, -60, 0)
         self.render.setLight(dlnp)
+
+        alight = AmbientLight('alight')
+        alight.setColor(VBase4(0.75, 0.75, 0.75, 0))
+        alnp = render.attachNewNode(alight)
+        render.setLight(alnp)
 
         # Create a task to update the scene regularly.
         self.taskMgr.add(self.update, "UpdateTask")
