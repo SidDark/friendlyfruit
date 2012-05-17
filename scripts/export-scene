@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Nasty shell hack to find the project's top level directory.  If you
+# can think of a nicer way of doing this, please change it.
+
+TOPLEVEL=$(cd "`dirname $0`/.."; pwd)
+
+export PYTHONPATH="$TOPLEVEL"
+blender -b "$1" -P "$TOPLEVEL/fruit/export_scene.py" -- "$1"

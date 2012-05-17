@@ -1,6 +1,7 @@
 *~
 *.blend[0-9]
 *.py[co]
+*.sc
 
 .sconsign.dblite
 
