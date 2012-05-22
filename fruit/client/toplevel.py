@@ -1,6 +1,7 @@
 import argparse, asyncore, socket, sys, time
 
 from . import gameloop
+from .cache import Cache
 from .. import messaging
 from ..rpc import account_pb2, game_pb2
 
@@ -17,8 +18,9 @@ class ServerConnection(messaging.Rpc):
     called, but the server does nothing because it should attempt to
     carry on running."""
 
-    def __init__(self, sock):
+    def __init__(self, sock, cache):
         messaging.Rpc.__init__(self, sock=sock)
+        self.__cache = cache
         self.__last_keepalive = time.time()
         self.app = None
 
@@ -51,6 +53,10 @@ class ServerConnection(messaging.Rpc):
             print data.message
         elif name == "account_pb2.KeepAlive":
             self.__last_keepalive = time.time()
+        elif name == "game_pb2.LoadScene":
+            data = game_pb2.LoadScene()
+            data.ParseFromString(msg)
+            self.__cache.load(data.sc_url)
         elif name == "game_pb2.Start":
             data = game_pb2.Start()
             data.ParseFromString(msg)
@@ -110,7 +116,7 @@ def run():
     parse_command_line()
 
     sock = socket.create_connection((args.host, args.port))
-    server_connection = ServerConnection(sock)
+    server_connection = ServerConnection(sock, Cache("cache"))
 
     if args.new_account:
         register = account_pb2.NewAccount()

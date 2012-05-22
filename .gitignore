@@ -1,11 +1,11 @@
 *~
 *.blend[0-9]
 *.py[co]
-*.sc
 
 .sconsign.dblite
 
 /README.html
+/cache/
 /fruit/rpc/*_pb2.py
 /server.cfg
 

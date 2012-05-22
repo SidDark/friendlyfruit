@@ -6,6 +6,10 @@ message Start {
   required string player_tag = 1;
 }
 
+message LoadScene {
+  required string sc_url = 1;
+}
+
 message RemoveObject {
   required string tag = 1;
 }

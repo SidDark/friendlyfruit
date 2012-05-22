@@ -15,3 +15,7 @@ listen6.1 = ::, 41810
 host = localhost
 port = 27017
 prefix = main.fruit
+
+[game]
+
+scene = http://cdn.friendlyfruit.org/demo/scene.sc

@@ -83,6 +83,10 @@ class FruitRequestHandler(messaging.Rpc):
             msg = account_pb2.Kick()
             self.send_rpc(msg)
         else:
+            msg = game_pb2.LoadScene()
+            msg.sc_url = config.get("game", "scene")
+            self.send_rpc(msg)
+
             self.__player = Player(self.game_state, self)
             msg = game_pb2.Start()
             msg.player_tag = self.__player.name
