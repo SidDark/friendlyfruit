@@ -6,6 +6,53 @@ import bpy
 def encode_floats(floats):
     return " ".join(["%3.3f" % n for n in floats])
 
+class TextureProcessor:
+    def __init__(self):
+        self.__objects = set()
+        self.__materials = set()
+        self.__nodes = set()
+        self.__textures = set()
+        self.__files = set()
+
+    def process_object(self, obj):
+        if obj in self.__objects: return
+        self.__objects.add(obj)
+
+        for material_slot in obj.material_slots:
+            self.process_material(material_slot.material)
+
+    def process_material(self, material):
+        if material in self.__materials: return
+        self.__materials.add(material)
+
+        if material.use_nodes:
+            for link in material.node_tree.links:
+                self.process_node(link.from_node)
+                self.process_node(link.to_node)
+
+        for texture_slot in material.texture_slots:
+            if texture_slot is not None: self.process_texture(texture_slot.texture)
+
+    def process_node(self, node):
+        if node in self.__nodes: return
+        self.__nodes.add(node)
+
+        if isinstance(node, bpy.types.ShaderNodeTexture):
+            self.process_texture(node.texture)
+        elif isinstance(node, bpy.types.ShaderNodeMaterial):
+            self.process_material(node.material)
+
+    def process_texture(self, texture):
+        if texture in self.__textures: return
+        self.__textures.add(texture)
+
+        if isinstance(texture, bpy.types.ImageTexture):
+            self.__files.add(texture.image.filepath)
+
+    @property
+    def files(self):
+        return self.__files
+
 config = ConfigParser()
 scene = bpy.data.scenes[0]
 print("Using scene '%s'..." % scene.name)
@@ -14,7 +61,13 @@ config["scene"]["url"] = scene["url"]
 config["scene"]["prefix"] = scene["prefix"]
 
 things = []
+texture_processor = TextureProcessor()
 for obj in scene.objects:
+    texture_processor.process_object(obj)
+    if obj.dupli_group is not None:
+        for referenced_obj in obj.dupli_group.objects:
+            texture_processor.process_object(referenced_obj)
+
     if "egg" in obj:
         print()
         print("Found '%s' with egg file '%s'." % (obj.name, obj["egg"]))
@@ -33,6 +86,13 @@ for obj in scene.objects:
         section["scale"] = encode_floats(obj.scale)
 
 config["scene"]["things"] = " ".join(things)
+
+textures = texture_processor.files
+textures = [re.sub(r"//", "./", texture) for texture in textures]
+textures.sort()
+config["textures"] = {}
+for i, texture in enumerate(textures):
+    config["textures"]["texture.%d" % i] = texture
 
 filename = sys.argv[-1]
 filename = re.sub(r"\.[^.]+$", "", filename)
