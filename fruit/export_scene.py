@@ -1,4 +1,4 @@
-import re, sys, urllib.parse
+import os, re, shutil, sys, urllib.parse
 from configparser import ConfigParser
 
 import bpy
@@ -62,6 +62,7 @@ config["scene"]["prefix"] = scene["prefix"]
 
 things = []
 texture_processor = TextureProcessor()
+eggs = set()
 for obj in scene.objects:
     texture_processor.process_object(obj)
     if obj.dupli_group is not None:
@@ -77,6 +78,7 @@ for obj in scene.objects:
 
         internal_name = "t-" + urllib.parse.quote_plus(obj.name)
         things.append(internal_name)
+        eggs.add(obj["egg"])
 
         config[internal_name] = {}
         section = config[internal_name]
@@ -94,8 +96,15 @@ config["textures"] = {}
 for i, texture in enumerate(textures):
     config["textures"]["texture.%d" % i] = texture
 
-filename = sys.argv[-1]
+output_dir = sys.argv[-1]
+filename = sys.argv[-2]
+
 filename = re.sub(r"\.[^.]+$", "", filename)
-filename += ".sc"
+filename = output_dir + os.path.sep + filename + ".sc"
 with open(filename, "w") as handle:
     config.write(handle)
+
+for filename in eggs | set(textures):
+    dest_dir = os.path.join(output_dir, os.path.dirname(filename))
+    if not os.path.exists(dest_dir): os.makedirs(dest_dir)
+    shutil.copy2(filename, dest_dir)

@@ -1,9 +1,25 @@
 #!/bin/sh
 
+# Export a scene from a .blend file to a form that can be uploaded to
+# your web hosting.  Invoke as:
+#
+# .../export-scene scene.blend output-directory
+#
+# You probably want to invoke the script from the directory that
+# contains your .blend file, or it may have problems with relative
+# paths.
+
+if [ -e "$2" ]; then
+    echo 'Cannot export to an existing directory; remove it first.'
+    exit 1
+fi
+
+mkdir "$2" || exit 1
+
 # Nasty shell hack to find the project's top level directory.  If you
 # can think of a nicer way of doing this, please change it.
 
 TOPLEVEL=$(cd "`dirname $0`/.."; pwd)
 
 export PYTHONPATH="$TOPLEVEL"
-blender -b "$1" -P "$TOPLEVEL/fruit/export_scene.py" -- "$1"
+blender -b "$1" -P "$TOPLEVEL/fruit/export_scene.py" -- "$1" "$2"
