@@ -21,21 +21,32 @@ class ServerConnection(messaging.Rpc):
     def __init__(self, sock, cache):
         messaging.Rpc.__init__(self, sock=sock)
         self.__cache = cache
-        self.__last_keepalive = time.time()
+        self.__last_keepalive_received = time.time()
+        self.__last_keepalive_sent = 0
         self.app = None
 
     def handle_close(self):
         print "Connection to server was lost."
         sys.exit(3)
 
-    def keepalive(self, task):
-        data = account_pb2.KeepAlive()
-        self.send_rpc(data)
+    def send_keepalive(self):
+        if self.__last_keepalive_sent + messaging.KEEPALIVE_FREQUENCY < time.time():
+            data = account_pb2.KeepAlive()
+            self.send_rpc(data)
+            self.__last_keepalive_sent = time.time()
 
-        if self.__last_keepalive < time.time() - messaging.KEEPALIVE_PERMITTED_DELAY:
+    def keepalive(self, task):
+        self.send_keepalive()
+
+        if self.__last_keepalive_received < time.time() - messaging.KEEPALIVE_PERMITTED_DELAY:
             self.handle_close()
 
         return task.again
+
+    def scene_loaded(self):
+        data = game_pb2.SceneLoaded()
+        self.send_rpc(data)
+        self.app = None
 
     def uncaught_exception(self, e):
         sys.exit(1)
@@ -52,11 +63,12 @@ class ServerConnection(messaging.Rpc):
             data.ParseFromString(msg)
             print data.message
         elif name == "account_pb2.KeepAlive":
-            self.__last_keepalive = time.time()
+            self.__last_keepalive_received = time.time()
         elif name == "game_pb2.LoadScene":
             data = game_pb2.LoadScene()
             data.ParseFromString(msg)
-            self.__cache.load(data.sc_url)
+            self.__cache.load_scene(self, data.sc_url)
+            self.app = self.__cache
         elif name == "game_pb2.Start":
             data = game_pb2.Start()
             data.ParseFromString(msg)

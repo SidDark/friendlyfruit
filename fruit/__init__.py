@@ -1,6 +1,6 @@
 import ConfigParser
 
-class _FruitConfigParser(ConfigParser.SafeConfigParser):
+class FruitConfigParser(ConfigParser.SafeConfigParser):
     def get_all(self, section, option):
         results = []
         index = 1
@@ -13,4 +13,9 @@ class _FruitConfigParser(ConfigParser.SafeConfigParser):
         except ConfigParser.NoOptionError:
             return results
 
-config = _FruitConfigParser()
+
+    # Don't transform option names to lower case:
+    def optionxform(self, opt):
+        return opt
+
+config = FruitConfigParser()

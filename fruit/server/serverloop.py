@@ -50,6 +50,8 @@ class FruitRequestHandler(messaging.Rpc):
             data = account_pb2.Login()
             data.ParseFromString(msg)
             self.__login(data.user_id, data.password)
+        elif name == "game_pb2.SceneLoaded":
+            self.__start_game()
         elif name == "account_pb2.KeepAlive":
             self.__last_keepalive = time.time()
         elif name == "game_pb2.EventOccurred":
@@ -87,6 +89,7 @@ class FruitRequestHandler(messaging.Rpc):
             msg.sc_url = config.get("game", "scene")
             self.send_rpc(msg)
 
+    def __start_game(self):
             self.__player = Player(self.game_state, self)
             msg = game_pb2.Start()
             msg.player_tag = self.__player.name

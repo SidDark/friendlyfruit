@@ -54,6 +54,9 @@ class TextureProcessor:
         return self.__files
 
 config = ConfigParser()
+# Don't convert option names to lower case:
+config.optionxform = str
+
 scene = bpy.data.scenes[0]
 print("Using scene '%s'..." % scene.name)
 config["scene"] = {}
@@ -90,11 +93,11 @@ for obj in scene.objects:
 config["scene"]["things"] = " ".join(things)
 
 textures = texture_processor.files
-textures = [re.sub(r"//", "./", texture) for texture in textures]
+textures = [re.sub(r"//", "", texture) for texture in textures]
 textures.sort()
 config["textures"] = {}
 for i, texture in enumerate(textures):
-    config["textures"]["texture.%d" % i] = texture
+    config["textures"]["texture.%d" % (i + 1)] = texture
 
 output_dir = sys.argv[-1]
 config["compression"] = {}
@@ -112,5 +115,5 @@ for filename in eggs | set(textures):
         config["compression"][filename] = "xz"
         print("done.")
 
-with open(output_dir + os.path.sep + "scene.ini", "w") as handle:
+with open(output_dir + os.path.sep + "scene.cfg", "w") as handle:
     config.write(handle)

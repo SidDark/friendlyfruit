@@ -10,6 +10,9 @@ message LoadScene {
   required string sc_url = 1;
 }
 
+message SceneLoaded {
+}
+
 message RemoveObject {
   required string tag = 1;
 }

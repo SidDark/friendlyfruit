@@ -18,4 +18,16 @@ prefix = main.fruit
 
 [game]
 
-scene = http://cdn.friendlyfruit.org/demo/scene.ini
+# If you are changing the scene frequently, you may get a problem with
+# Cloudfront serving up out of date files.  To prevent this, make the
+# scene point directly to your S3 bucket, as in the second option
+# below.  Don't forget to change it back for improved performance
+# later.
+#
+# Please don't use my (Pete's) S3 bucket directly, because the files
+# might be moved.  I'm intending to keep cdn.friendlyfruit.org
+# pointing somewhere sensible, but I don't know where I'll choose to
+# host it in the future.
+
+scene = http://cdn.friendlyfruit.org/demo/
+# scene = https://s3-eu-west-1.amazonaws.com/friendlyfruit/demo/
