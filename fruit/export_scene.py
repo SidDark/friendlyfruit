@@ -1,4 +1,4 @@
-import os, re, shutil, sys, urllib.parse
+import os, re, shutil, subprocess, sys, urllib.parse
 from configparser import ConfigParser
 
 import bpy
@@ -97,14 +97,20 @@ for i, texture in enumerate(textures):
     config["textures"]["texture.%d" % i] = texture
 
 output_dir = sys.argv[-1]
-filename = sys.argv[-2]
+config["compression"] = {}
 
-filename = re.sub(r"\.[^.]+$", "", filename)
-filename = output_dir + os.path.sep + filename + ".sc"
-with open(filename, "w") as handle:
-    config.write(handle)
-
+print()
 for filename in eggs | set(textures):
     dest_dir = os.path.join(output_dir, os.path.dirname(filename))
     if not os.path.exists(dest_dir): os.makedirs(dest_dir)
     shutil.copy2(filename, dest_dir)
+
+    if re.search(r"\.(egg|bam)$", filename):
+        sys.stdout.write("Compressing %s with xz...  " % os.path.basename(filename))
+        sys.stdout.flush()
+        subprocess.call(["xz", "-9", dest_dir + filename])
+        config["compression"][filename] = "xz"
+        print("done.")
+
+with open(output_dir + os.path.sep + "scene.ini", "w") as handle:
+    config.write(handle)

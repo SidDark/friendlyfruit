@@ -18,4 +18,4 @@ prefix = main.fruit
 
 [game]
 
-scene = http://cdn.friendlyfruit.org/demo/scene.sc
+scene = http://cdn.friendlyfruit.org/demo/scene.ini
