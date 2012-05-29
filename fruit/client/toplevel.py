@@ -1,4 +1,4 @@
-import argparse, asyncore, socket, sys, time
+import argparse, asyncore, os, socket, sys, time
 
 from . import gameloop
 from .cache import Cache
@@ -112,11 +112,13 @@ def parse_command_line():
 
     args = argparser.parse_args()
 
-def run():
+def run(toplevel_dir):
     parse_command_line()
 
     sock = socket.create_connection((args.host, args.port))
-    server_connection = ServerConnection(sock, Cache("cache"))
+    cache_dir = toplevel_dir + os.path.sep + "cache"
+    if not os.path.exists(cache_dir): os.mkdir(cache_dir)
+    server_connection = ServerConnection(sock, Cache(cache_dir))
 
     if args.new_account:
         register = account_pb2.NewAccount()

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 from fruit.client import toplevel
 
-toplevel.run()
+toplevel.run(os.path.dirname(__file__))
