@@ -85,6 +85,11 @@ the following additional dependencies:
   for converting MakeHuman's TIFF images to PNG.  You don't need this
   unless you are going to be creating your own MakeHuman models.
 
+* Downloadable scenes are compressed using the xz format
+  (http://tukaani.org/xz/).  You will need to download the supporting
+  programs, xz and unxz, as well as the libraries.  On Ubuntu and
+  Debian you can get this software by installing the xz-utils package.
+
 Building
 --------
 
