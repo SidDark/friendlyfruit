@@ -86,8 +86,8 @@ class FriendlyFruit(ShowBase):
 
         alight = AmbientLight('alight')
         alight.setColor(VBase4(0.75, 0.75, 0.75, 0))
-        alnp = render.attachNewNode(alight)
-        render.setLight(alnp)
+        alnp = self.render.attachNewNode(alight)
+        self.render.setLight(alnp)
 
         # Create a task to update the scene regularly.
         self.taskMgr.add(self.update, "UpdateTask")
