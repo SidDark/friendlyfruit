@@ -67,7 +67,7 @@ class ServerConnection(messaging.Rpc):
         elif name == "game_pb2.LoadScene":
             data = game_pb2.LoadScene()
             data.ParseFromString(msg)
-            self.__cache.load_scene(self, data.sc_url)
+            self.__scene = self.__cache.load_scene(self, data.sc_url)
             self.app = self.__cache
         elif name == "game_pb2.Start":
             data = game_pb2.Start()
@@ -101,6 +101,7 @@ class ServerConnection(messaging.Rpc):
 
     def __start_game(self, player_tag):
         self.app = gameloop.FriendlyFruit(self, player_tag)
+        self.app.create_scene(self.__scene)
         self.app.doMethodLater(messaging.KEEPALIVE_FREQUENCY, self.keepalive, "KeepAliveTask")
 
 def parse_command_line():

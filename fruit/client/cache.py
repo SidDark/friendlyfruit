@@ -122,6 +122,7 @@ create table if not exists cache
     def load_scene(self, server_connection, url):
         self.__server_connection = server_connection
         self.__base_url = url
+        return self.__url_to_filename(url)
 
     def run(self):
         cfg = self.__load(self.__base_url + "scene.cfg")

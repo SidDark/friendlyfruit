@@ -18,4 +18,8 @@ class FruitConfigParser(ConfigParser.SafeConfigParser):
     def optionxform(self, opt):
         return opt
 
+    def getfloats(self, section, option):
+        values = self.get(section, option)
+        return [float(f) for f in values.split(" ")]
+
 config = FruitConfigParser()

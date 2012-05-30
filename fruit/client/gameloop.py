@@ -8,6 +8,8 @@ from panda3d.bullet import BulletCapsuleShape, BulletCharacterControllerNode, Bu
 from panda3d.core import AmbientLight, DirectionalLight, Point3, VBase4, Vec3, deg2Rad
 from pandac.PandaModules import loadPrcFile
 
+from ..scene import Scene
+
 loadPrcFile("client-config.prc")
 
 class Thing(object):
@@ -28,7 +30,7 @@ class Thing(object):
     def get_thing(self, tag):
         return self.__things[tag]
 
-class FriendlyFruit(ShowBase):
+class FriendlyFruit(ShowBase, Scene):
     def __init__(self, server_connection, player_tag):
         ShowBase.__init__(self)
         self.__server_connection = server_connection
@@ -53,29 +55,6 @@ class FriendlyFruit(ShowBase):
         np = self.render.attachNewNode(node)
         np.setPos(0, 0, 0)
         self.world.attachRigidBody(node)
-
-        # Load the 3dWarehouse model.
-        cathedral = self.loader.loadModel("3dWarehouse_Reykjavik_Cathedral.egg")
-        cathedral.reparentTo(self.render)
-        cathedral.setScale(0.5)
-
-        # Load the Blender model.
-        self.humanoid = Actor("player.bam")
-        self.humanoid.setScale(0.5)
-        self.humanoid.reparentTo(self.render)
-        self.humanoid.loop("Walk")
-
-        speed = 14.6 # units per second
-        humanoidPosInterval1 = self.humanoid.posInterval(80 / speed, Point3(13, -20, 0), startPos=Point3(13, 20, 0))
-        humanoidPosInterval2 = self.humanoid.posInterval(80 / speed, Point3(13, 20, 0), startPos=Point3(13, -20, 0))
-        humanoidHprInterval1 = self.humanoid.hprInterval(0.1, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
-        humanoidHprInterval2 = self.humanoid.hprInterval(0.1, Point3(0, 0, 0), startHpr=Point3(180, 0, 0))
-
-        # Make the Blender model walk up and down.
-        self.humanoidPace = Sequence(humanoidPosInterval1, humanoidHprInterval1, humanoidPosInterval2,
-                                     humanoidHprInterval2, name="humanoidPace")
-
-        self.humanoidPace.loop()
 
         # Create lights so we can see the scene.
         dlight = DirectionalLight("dlight")
