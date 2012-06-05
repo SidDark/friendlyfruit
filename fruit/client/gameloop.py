@@ -2,7 +2,6 @@ import asyncore
 
 from direct.showbase.ShowBase import ShowBase
 from direct.actor.Actor import Actor
-from direct.interval.IntervalGlobal import Sequence
 from panda3d.bullet import BulletCapsuleShape, BulletCharacterControllerNode, BulletPlaneShape, BulletRigidBodyNode, \
     BulletWorld, ZUp
 from panda3d.core import AmbientLight, DirectionalLight, Point3, VBase4, Vec3, deg2Rad
@@ -55,6 +54,9 @@ class FriendlyFruit(ShowBase, Scene):
         np = self.render.attachNewNode(node)
         np.setPos(0, 0, 0)
         self.world.attachRigidBody(node)
+
+        # Enable shader generation (for more sophisticated lighting etc.)
+        self.render.setShaderAuto()
 
         # Create lights so we can see the scene.
         dlight = DirectionalLight("dlight")

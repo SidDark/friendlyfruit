@@ -13,6 +13,8 @@ class TextureProcessor:
         self.__nodes = set()
         self.__textures = set()
         self.__files = set()
+        self.__stencils = []
+        self.__terrain_textures = {}
 
     def process_object(self, obj):
         if obj in self.__objects: return
@@ -48,10 +50,22 @@ class TextureProcessor:
 
         if isinstance(texture, bpy.types.ImageTexture):
             self.__files.add(texture.image.filepath)
+            if "stencil" in texture and texture["stencil"]:
+                self.__stencils.append(texture.image.filepath)
+            if "terrain" in texture:
+                self.__terrain_textures[texture.image.filepath] = texture["terrain"]
 
     @property
     def files(self):
         return self.__files
+
+    @property
+    def stencils(self):
+        return self.__stencils
+
+    @property
+    def terrain_textures(self):
+        return self.__terrain_textures
 
 config = ConfigParser()
 # Don't convert option names to lower case:
@@ -92,9 +106,22 @@ for obj in scene.objects:
 
 config["scene"]["things"] = " ".join(things)
 
-textures = texture_processor.files
-textures = [re.sub(r"//", "", texture) for texture in textures]
+textures = list(texture_processor.files)
+
+if "heightmap" in scene:
+    textures.append(scene["heightmap"])
+
 textures.sort()
+config["terrain"] = {}
+for i, texture in enumerate(textures):
+    if texture in texture_processor.stencils:
+        config["scene"]["stencil"] = "texture.%d" % (i + 1)
+    if texture in texture_processor.terrain_textures:
+        config["terrain"][texture_processor.terrain_textures[texture]] = "texture.%d" % (i + 1)
+    if "heightmap" in scene and texture == scene["heightmap"]:
+        config["scene"]["heightmap"] = "texture.%d" % (i + 1)
+
+textures = [re.sub(r"//", "", texture) for texture in textures]
 config["textures"] = {}
 for i, texture in enumerate(textures):
     config["textures"]["texture.%d" % (i + 1)] = texture
