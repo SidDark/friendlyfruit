@@ -55,6 +55,12 @@ class Scene(object):
 
         terrain.getRoot().setTexture(ts, "final")
 
+    def __create_skybox(self):
+        egg = self.loader.loadModel("media/skybox.egg")
+        egg.reparentTo(self.render)
+        sky = self.loader.loadTexture(self.__texture_path(self.__scene.get("scene", "skybox")))
+        egg.setTexture(sky)
+
     def create_scene(self, directory):
         self.__directory = directory
         loadPrcFileData("", "model-path %s" % directory)
@@ -71,3 +77,6 @@ class Scene(object):
 
         if self.__scene.has_option("scene", "stencil"):
             self.__create_terrain()
+
+        if self.__scene.has_option("scene", "skybox"):
+            self.__create_skybox()

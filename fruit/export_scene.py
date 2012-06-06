@@ -110,6 +110,8 @@ textures = list(texture_processor.files)
 
 if "heightmap" in scene:
     textures.append(scene["heightmap"])
+if "skybox" in scene:
+    textures.append(scene["skybox"])
 
 textures.sort()
 config["terrain"] = {}
@@ -120,6 +122,8 @@ for i, texture in enumerate(textures):
         config["terrain"][texture_processor.terrain_textures[texture]] = "texture.%d" % (i + 1)
     if "heightmap" in scene and texture == scene["heightmap"]:
         config["scene"]["heightmap"] = "texture.%d" % (i + 1)
+    if "skybox" in scene and texture == scene["skybox"]:
+        config["scene"]["skybox"] = "texture.%d" % (i + 1)
 
 textures = [re.sub(r"//", "", texture) for texture in textures]
 config["textures"] = {}
